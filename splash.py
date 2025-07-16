@@ -104,7 +104,7 @@ class SplashScreen:
             if elapsed > intro_duration:
                 running = False
 
-    def show_press_enter_screen(self):
+    def show_press_enter_screen(self, sound_manager=None):
         clock = pygame.time.Clock()
         w, h = self.screen.get_size()
         waiting = True
@@ -116,6 +116,9 @@ class SplashScreen:
                     exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
+                        # Play startup sound when Enter is pressed
+                        if sound_manager:
+                            sound_manager.play_startup()
                         waiting = False
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()

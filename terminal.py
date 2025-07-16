@@ -10,6 +10,7 @@ from config import COLOR_SCHEME, COLOR_PRESETS, FONT_NAME, FONT_SIZE, TEXT_SPEED
 from effects import apply_scanlines, apply_noise, apply_glow, jitter_rect, flicker_alpha, apply_text_glitch, corrupt_surface
 from commands import CommandHandler
 from splash import SplashScreen
+from sounds import SoundManager
 
 class Terminal:
     """
@@ -41,6 +42,8 @@ class Terminal:
         # Corruption effect state
         self.corruption_active = False
         self.corruption_end_time = 0.0
+        # Sound manager
+        self.sound_manager = SoundManager()
 
     def add_output(self, text, flicker=False):
         """
@@ -86,6 +89,7 @@ class Terminal:
                     self.running = False
                 if event.key == pygame.K_BACKSPACE:
                     self.input_line = self.input_line[:-1]
+                    self.sound_manager.play_random_keypress()
                 elif event.key == pygame.K_RETURN:
                     line = self.input_line.strip()
                     if line:
@@ -97,6 +101,7 @@ class Terminal:
                     self.scroll_offset = max(self.scroll_offset - 1, 0)
                 elif event.key < 256:
                     self.input_line += event.unicode
+                    self.sound_manager.play_random_keypress()
 
     def draw(self):
         self.screen.fill(self.colors['bg'])
@@ -155,16 +160,25 @@ class Terminal:
         self.screen.blit(framebuffer, (0, 0))
 
 if __name__ == '__main__':
-    # Show splash/boot screen first
+    # Initialize pygame and create window
     pygame.init()
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    
+    # Initialize sound manager
+    from sounds import SoundManager
+    sound_manager = SoundManager()
+    
+    # Show splash/boot screen
     from config import COLOR_PRESETS, COLOR_SCHEME, FONT_NAME, FONT_SIZE
     font = pygame.font.Font(FONT_NAME, FONT_SIZE)
     colors = COLOR_PRESETS[COLOR_SCHEME]
     splash = SplashScreen(screen, font, colors)
-    splash.show_press_enter_screen()
+    
+    # Show press enter screen and play startup sound when Enter is pressed
+    splash.show_press_enter_screen(sound_manager)
     splash.show_logo_intro()
     splash.run()
+    
     # Then launch the terminal, reusing the same screen
     term = Terminal(screen=screen)
     term.add_output("CYBERPUNK RED TERMINAL ONLINE.")
